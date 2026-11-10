@@ -159,21 +159,15 @@
             if (!key) {
                 key = 'TUF-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
                 
-                // SAFE INSERT WITH FALLBACK TO PREVENT DUPLICATE KEY 23505 ERROR
-                const { error: insertError } = await supabaseClient.from('user_credits').insert([
+                // BULLETPROOF UPSERT MATCHING USER_EMAIL CONSTRAINT EXPLICITLY
+                await supabaseClient.from('user_credits').upsert([
                     { 
                         user_email: currentUserEmail, 
                         license_key: key, 
-                        credits: data?.credits || 150, 
+                        credits: data?.credits || 0, 
                         updated_at: new Date() 
                     }
-                ]);
-                
-                if (insertError) {
-                    await supabaseClient.from('user_credits')
-                        .update({ license_key: key })
-                        .eq('user_email', currentUserEmail);
-                }
+                ], { onConflict: 'user_email' });
             }
             document.getElementById('licenseKeyDisplay').value = key;
         }
