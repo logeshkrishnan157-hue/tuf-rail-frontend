@@ -153,23 +153,29 @@
         });
 
         async function loadOrGenerateLicenseKey() {
-            let { data, error } = await supabaseClient.from('user_credits').select('license_key, credits').eq('user_email', currentUserEmail).single();
-            let key = data?.license_key;
-            
-            if (!key) {
-                key = 'TUF-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
-                
-                // BULLETPROOF UPSERT MATCHING USER_EMAIL CONSTRAINT EXPLICITLY
-                await supabaseClient.from('user_credits').upsert([
-                    { 
-                        user_email: currentUserEmail, 
-                        license_key: key, 
-                        credits: data?.credits || 0, 
-                        updated_at: new Date() 
-                    }
-                ], { onConflict: 'user_email' });
+            try {
+                // Use secure RPC function to bypass RLS and avoid direct table insert conflicts
+                let { data, error } = await supabaseClient.rpc('get_or_create_license', {
+                    p_email: currentUserEmail
+                });
+
+                if (error) {
+                    console.error("RPC Error:", error);
+                    document.getElementById('licenseKeyDisplay').value = "Error Loading Key";
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    let key = data[0].license_key;
+                    let currentCredits = data[0].credits || 0;
+                    
+                    document.getElementById('licenseKeyDisplay').value = key;
+                    document.getElementById('userCreditBalance').innerText = currentCredits;
+                }
+            } catch (err) {
+                console.error("License load exception:", err);
+                document.getElementById('licenseKeyDisplay').value = "TUF-ERROR-KEY";
             }
-            document.getElementById('licenseKeyDisplay').value = key;
         }
 
         function copyLicenseKey() {
@@ -309,14 +315,9 @@
                 const currentBal = existing ? (existing.credits || 0) : 0;
                 const newTotal = currentBal + 150;
 
-                if (existing) {
-                    await supabaseClient.from('user_credits')
-                        .update({ credits: newTotal, has_claimed_free_credits: true, updated_at: new Date() })
-                        .eq('user_email', currentUserEmail);
-                } else {
-                    await supabaseClient.from('user_credits')
-                        .insert([{ user_email: currentUserEmail, credits: 150, has_claimed_free_credits: true }]);
-                }
+                await supabaseClient.from('user_credits')
+                    .update({ credits: newTotal, has_claimed_free_credits: true, updated_at: new Date() })
+                    .eq('user_email', currentUserEmail);
 
                 alert('🎉 Success! 150 Free Voice Credits added to your account.');
                 location.reload();
