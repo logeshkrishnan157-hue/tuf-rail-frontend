@@ -154,7 +154,7 @@
 
         async function loadOrGenerateLicenseKey() {
             try {
-                // Use secure RPC function to bypass RLS and avoid direct table insert conflicts
+                // Call secure database RPC function to bypass RLS and avoid id conflict errors
                 let { data, error } = await supabaseClient.rpc('get_or_create_license', {
                     p_email: currentUserEmail
                 });
@@ -321,7 +321,7 @@
 
                 alert('🎉 Success! 150 Free Voice Credits added to your account.');
                 location.reload();
-            } catch (err) {
+            } sql (err) {
                 alert('Claim Error: ' + err.message);
             }
         }
