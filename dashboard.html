@@ -148,13 +148,12 @@
             document.getElementById('headerUserEmail').innerText = currentUserEmail;
             document.getElementById('profileEmail').innerText = currentUserEmail;
 
-            await loadOrGenerateLicenseKey();
+            // Load purchases first to determine if app is approved for free claim logic
             await loadDashboardData();
         });
 
         async function loadOrGenerateLicenseKey() {
             try {
-                // Call secure database RPC function to bypass RLS and avoid id conflict errors
                 let { data, error } = await supabaseClient.rpc('get_or_create_license', {
                     p_email: currentUserEmail
                 });
@@ -168,9 +167,28 @@
                 if (data && data.length > 0) {
                     let key = data[0].license_key;
                     let currentCredits = data[0].credits || 0;
+                    let claimedFree = data[0].has_claimed_free_credits || false;
                     
                     document.getElementById('licenseKeyDisplay').value = key;
                     document.getElementById('userCreditBalance').innerText = currentCredits;
+
+                    // Handle Free Claim Card visibility safely from RPC response
+                    const freeClaimCard = document.getElementById('freeClaimCard');
+                    const claimBtn = document.getElementById('claimBtn');
+                    const statusText = document.getElementById('claimStatusText');
+
+                    if (hasApprovedApp) {
+                        freeClaimCard.classList.remove('hidden');
+                        if (claimedFree) {
+                            claimBtn.innerText = '✔ Already Claimed (150 Credits)';
+                            claimBtn.disabled = true;
+                            claimBtn.classList.add('bg-slate-700', 'cursor-not-allowed');
+                            claimBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+                            statusText.innerText = 'One-time bonus already redeemed.';
+                        }
+                    } else {
+                        freeClaimCard.classList.add('hidden');
+                    }
                 }
             } catch (err) {
                 console.error("License load exception:", err);
@@ -178,34 +196,15 @@
             }
         }
 
+        async function fetchUserCredits() {
+            // Securely handled via RPC inside loadOrGenerateLicenseKey to prevent RLS errors
+        }
+
         function copyLicenseKey() {
             const copyText = document.getElementById('licenseKeyDisplay');
             copyText.select();
             navigator.clipboard.writeText(copyText.value);
             alert('License Key copied to clipboard!');
-        }
-
-        async function fetchUserCredits() {
-            const { data } = await supabaseClient.from('user_credits').select('*').eq('user_email', currentUserEmail).single();
-            const currentCredits = data ? (data.credits || 0) : 0;
-            document.getElementById('userCreditBalance').innerText = currentCredits;
-
-            const freeClaimCard = document.getElementById('freeClaimCard');
-            const claimBtn = document.getElementById('claimBtn');
-            const statusText = document.getElementById('claimStatusText');
-
-            if (hasApprovedApp) {
-                freeClaimCard.classList.remove('hidden');
-                if (data && data.has_claimed_free_credits) {
-                    claimBtn.innerText = '✔ Already Claimed (150 Credits)';
-                    claimBtn.disabled = true;
-                    claimBtn.classList.add('bg-slate-700', 'cursor-not-allowed');
-                    claimBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
-                    statusText.innerText = 'One-time bonus already redeemed.';
-                }
-            } else {
-                freeClaimCard.classList.add('hidden');
-            }
         }
 
         async function loadDashboardData() {
@@ -221,10 +220,8 @@
             if (error || !purchases || purchases.length === 0) {
                 ordersList.innerHTML = '<p class="text-xs text-slate-500">You have no order history yet.</p>';
                 hasApprovedApp = false;
-                await fetchUserCredits();
             } else {
                 hasApprovedApp = purchases.some(p => p.item_type === 'app' && p.status === 'approved');
-                await fetchUserCredits();
 
                 ordersList.innerHTML = purchases.map(p => {
                     let titleDisplay = p.item_type === 'credits' ? `⚡ Voice Credit Topup (${p.credits_amount} Credits)` : 
@@ -269,6 +266,9 @@
                 }).join('');
             }
 
+            // Load License Key & Credits via Secure RPC after approvals are calculated
+            await loadOrGenerateLicenseKey();
+
             const { data: tickets } = await supabaseClient
                 .from('bug_reports')
                 .select('*')
@@ -305,24 +305,19 @@
             }
 
             try {
-                const { data: existing } = await supabaseClient.from('user_credits').select('*').eq('user_email', currentUserEmail).single();
-                
-                if (existing && existing.has_claimed_free_credits) {
-                    alert('You have already claimed your one-time free 150 voice credits!');
+                let { data, error } = await supabaseClient.rpc('claim_free_credits_secure', {
+                    p_email: currentUserEmail
+                });
+
+                if (error || (data && !data.success)) {
+                    alert('Claim Error: ' + (error?.message || data?.message || 'Unknown error'));
                     return;
                 }
 
-                const currentBal = existing ? (existing.credits || 0) : 0;
-                const newTotal = currentBal + 150;
-
-                await supabaseClient.from('user_credits')
-                    .update({ credits: newTotal, has_claimed_free_credits: true, updated_at: new Date() })
-                    .eq('user_email', currentUserEmail);
-
                 alert('🎉 Success! 150 Free Voice Credits added to your account.');
                 location.reload();
-            } sql (err) {
-                alert('Claim Error: ' + err.message);
+            } catch (err) {
+                alert('Claim Exception: ' + err.message);
             }
         }
     </script>
