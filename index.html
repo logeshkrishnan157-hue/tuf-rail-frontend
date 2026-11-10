@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TufTactics - AI Railway Assistant & Scenarios Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#08090e',
+                        cardbg: '#11131c',
+                        accentblue: '#3b82f6',
+                        accentgreen: '#34d399'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white scroll-smooth">
+
+    <!-- TOP FESTIVE OFFER BANNER (DYNAMIC) -->
+    <div id="topOfferBanner" class="hidden bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 text-white text-xs font-bold py-2.5 px-4 text-center tracking-wide shadow-lg">
+        🔥 <span id="offerBannerText">Loading Festive Sale...</span> 🔥
+    </div>
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="border-b border-slate-800 bg-[#08090e]/95 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
+            
+            <div class="flex items-center space-x-3 shrink-0">
+                <img src="TufTactics Logo.png" alt="TufTactics Logo" class="w-9 h-9 object-contain rounded-lg">
+                <h1 class="text-xl md:text-2xl font-black tracking-wider bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">TUFTACTICS</h1>
+            </div>
+
+            <nav class="hidden lg:flex items-center space-x-6 text-sm md:text-base font-bold text-slate-200">
+                <a href="#features" class="hover:text-blue-400 transition">Features</a>
+                <a href="#news" class="hover:text-blue-400 transition">News</a>
+                <a href="#store" class="hover:text-blue-400 transition">Store & App</a>
+                <a href="#feedback" class="hover:text-blue-400 transition">Reviews</a>
+                <a href="#contact" class="hover:text-blue-400 transition">Contact</a>
+            </nav>
+
+            <div class="flex items-center space-x-3 shrink-0">
+                <a href="dashboard.html" id="dashboardBtn" class="hidden bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 text-xs md:text-sm font-bold px-4 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+                    <span>📦 My Dashboard</span>
+                </a>
+
+                <button onclick="openCart()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs md:text-sm font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition shadow-sm">
+                    🛒 Cart (<span id="cartCount">0</span>)
+                </button>
+
+                <button id="loginBtn" onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-lg shadow transition text-xs md:text-sm border border-blue-500/30">
+                    <span>🔐 Sign In</span>
+                </button>
+
+                <div id="userProfile" class="hidden flex items-center space-x-3">
+                    <span id="userDisplayName" class="text-xs md:text-sm text-slate-200 font-bold bg-slate-800 px-3.5 py-2 rounded-lg border border-slate-700"></span>
+                    <button onclick="logout()" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 text-xs md:text-sm px-3.5 py-2 rounded-lg transition font-semibold">Logout</button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow">
+        <!-- HERO SECTION -->
+        <section class="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center justify-between">
+            <div class="md:w-1/2 space-y-6">
+                <span class="inline-block bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Next-Gen Railway Simulation AI 🚀</span>
+                <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-none">
+                    AI Railway Assistant & Scenarios Store
+                </h2>
+                <p class="text-slate-400 text-base md:text-lg max-w-xl">
+                    Unlock the official TufTactics AI Voice Assistant desktop app, custom LHB/ICF modded scenarios for Train Simulator Classic, and voice credits.
+                </p>
+
+                <!-- CRITICAL STORE & LICENSING NOTICE -->
+                <div class="bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl space-y-2 max-w-xl shadow-md">
+                    <p class="text-xs font-bold text-amber-400 flex items-center space-x-1.5">
+                        <span>🛡️</span><span>Official Licensing & System Requirements Notice:</span>
+                    </p>
+                    <p class="text-[11px] text-slate-300 leading-relaxed space-y-1">
+                        • **Hardware Requirement:** Strictly built for <b>PC / Laptop (Train Simulator Classic)</b>. Mobile devices and tablets are not supported.<br>
+                        • **AI Voice Assistant Compatibility:** Buying the TufTactics App enables the software framework. The AI Voice Assistant radio immersion is strictly supported and operational <b>only on official TufTactics-created scenarios</b> explicitly marked with the "AI Voice Assistant" feature badge.<br>
+                        • **Strict No-Refund Policy:** All digital software, scenario package, and voice credit sales are <b>final and non-refundable</b> once digital assets or credits are provisioned.
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
+                    <a href="#store" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg transition text-center flex items-center justify-center space-x-2">
+                        <span>🛒 Browse Store & App</span>
+                    </a>
+                    <a href="dashboard.html" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-7 py-3.5 rounded-xl border border-slate-700 transition text-center flex items-center justify-center space-x-2">
+                        <span>📦 Open User Portal</span>
+                    </a>
+                </div>
+            </div>
+            <div class="md:w-1/2 mt-12 md:mt-0 flex justify-center">
+                <div class="w-full max-w-md bg-cardbg border border-slate-800 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex items-center space-x-3 pb-3 border-b border-slate-800">
+                            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                            <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Live Dispatch Radio</span>
+                        </div>
+                        <p class="text-sm text-slate-300 font-mono bg-darkbg p-4 rounded-lg border border-slate-800/80">
+                            "Station Master, 12605 Pallavan Express ready for departure at platform 2, line clear over."
+                        </p>
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-semibold pt-2">
+                            <span>🎙️ Voice Pool: Guard / ALP</span>
+                            <span class="text-emerald-400">● Active Link</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION -->
+        <section id="features" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-800/80">
+            <div class="text-center space-y-3 mb-16">
+                <h3 class="text-3xl font-extrabold tracking-tight">Core Features & Capabilities</h3>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto">Engineered specifically for Train Simulator enthusiasts looking for deep simulation realism.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-cardbg border border-slate-800 p-8 rounded-2xl space-y-4 shadow-lg">
+                    <div class="w-12 h-12 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 text-xl font-bold">🎙️</div>
+                    <h4 class="text-xl font-bold">Multi-Role Voice AI (8 Voices)</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Features <b>4 Male & 4 Female professional voice models</b>. Interact dynamically with AI crew members representing Guards, Station Masters, Traveling Ticket Examiners (TTR), and Assistant Loco Pilots (ALP).
+                    </p>
+                </div>
+                <div class="bg-cardbg border border-slate-800 p-8 rounded-2xl space-y-4 shadow-lg">
+                    <div class="w-12 h-12 bg-amber-600/10 border border-amber-500/20 rounded-xl flex items-center justify-center text-amber-400 text-xl font-bold">🎨</div>
+                    <h4 class="text-xl font-bold">LHB Modding & Destination Boards</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Exclusive <b>Custom LHB/ICF coach texturing, EOG power car destination boards, and DDS/RSBinTool texture integrations</b> tailored for authentic Indian Railways rake setups.
+                    </p>
+                </div>
+                <div class="bg-cardbg border border-slate-800 p-8 rounded-2xl space-y-4 shadow-lg">
+                    <div class="w-12 h-12 bg-purple-600/10 border border-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 text-xl font-bold">🌐</div>
+                    <h4 class="text-xl font-bold">Multi-Language & Realism</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Regional radio phraseology in <b>Tamil, English, Hindi, Kannada, Malayalam, and Telugu</b>, coupled with synchronized arrival/departure times, signal clearance alerts, and push-to-talk hotkeys.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEWS & UPDATES SECTION -->
+        <section id="news" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-800/80">
+            <div class="text-center space-y-3 mb-16">
+                <h3 class="text-3xl font-extrabold tracking-tight">News & Updates</h3>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto">Stay up to date with the latest patches, voice models, and new route releases.</p>
+            </div>
+            <div id="clientNewsList" class="max-w-3xl mx-auto space-y-6">
+                <p class="text-center text-xs text-slate-500">Loading news updates...</p>
+            </div>
+        </section>
+
+        <!-- STORE SECTION -->
+        <section id="store" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-800/80 space-y-12">
+            <!-- APP PRODUCT CARD -->
+            <div class="space-y-6">
+                <div class="text-center space-y-2">
+                    <h3 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">🚀 Official Desktop Software</h3>
+                    <p class="text-slate-400 text-sm max-w-xl mx-auto">Unlock the core desktop client to enable real-time voice radio immersion with AI crew members.</p>
+                </div>
+                <div class="max-w-3xl mx-auto bg-cardbg border border-blue-500/40 p-8 rounded-2xl shadow-xl relative overflow-hidden bg-gradient-to-b from-blue-950/20 to-cardbg flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+                    <div class="space-y-3 relative z-10">
+                        <span class="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold uppercase tracking-wider">Core Desktop App (PC/Laptop Only)</span>
+                        <h4 class="text-2xl font-black text-slate-100">TufTactics TSC AI Voice Assistant App</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Communicate in real-time with Guard, Station Master, TTR, and ALP via Push-to-Talk on certified TufTactics scenarios. Includes a <b>one-time 150 Free Voice Credits bonus</b> upon purchase approval!
+                        </p>
+                    </div>
+                    <div class="shrink-0 text-center space-y-3 relative z-10 w-full md:w-auto" id="appPriceContainer"></div>
+                </div>
+            </div>
+
+            <!-- Voice Credits Packages -->
+            <div class="space-y-6 pt-6 border-t border-slate-800/60">
+                <div class="text-center space-y-2">
+                    <h3 class="text-3xl font-extrabold tracking-tight text-blue-400">⚡ AI Voice Assistant Credits</h3>
+                    <p class="text-slate-400 text-sm max-w-xl mx-auto">Top up your voice credit balance to power real-time radio conversations in-game.</p>
+                </div>
+                <div id="creditsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"></div>
+            </div>
+
+            <!-- Scenarios Store -->
+            <div class="space-y-6 pt-8 border-t border-slate-800/60">
+                <div class="text-center space-y-3">
+                    <h3 class="text-3xl font-extrabold tracking-tight">🚂 Train Simulator Scenarios</h3>
+                    <p class="text-slate-400 text-sm max-w-xl mx-auto">Unlock custom hand-crafted scenarios with instant UPI checkout.</p>
+                    
+                    <div id="routeFilters" class="flex justify-center gap-3 pt-4 flex-wrap">
+                        <button onclick="filterScenarios('all')" class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl">All Routes</button>
+                    </div>
+                </div>
+
+                <div id="scenarioGrid" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <p class="text-center text-slate-500 col-span-4">Loading store...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUG REPORT & REVIEWS SECTION -->
+        <section id="feedback" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-800/80">
+            <div class="text-center space-y-3 mb-16">
+                <h3 class="text-3xl font-extrabold tracking-tight">Bug Reports & Reviews</h3>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto">Found a glitch, want to request a feature, or share a review? Drop your ticket below.</p>
+            </div>
+            <div class="max-w-xl mx-auto bg-cardbg border border-slate-800 p-8 rounded-2xl space-y-6 shadow-xl">
+                <form onsubmit="submitBugReport(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-2">Feedback Type</label>
+                        <select id="feedbackType" class="w-full bg-darkbg border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="Bug Report">Bug Report / Glitch</option>
+                            <option value="Feature Request">Feature Request</option>
+                            <option value="Review">User Review / Suggestion</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-2">Your Message</label>
+                        <textarea id="feedbackMessage" rows="4" placeholder="Describe the issue or write your review..." class="w-full bg-darkbg border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500" required></textarea>
+                    </div>
+                    <button type="submit" id="feedbackBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-md">Submit Ticket / Feedback</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-800/80 text-center">
+            <div class="max-w-4xl mx-auto space-y-10">
+                <div class="space-y-3">
+                    <span class="inline-block bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Get in Touch</span>
+                    <h3 class="text-3xl font-extrabold tracking-tight">Support & Official Socials</h3>
+                    <p class="text-slate-400 text-sm">Reach out via direct email or catch the latest simulation streams and updates on our community handles.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                    <a href="mailto:tuftactics1528@gmail.com" class="bg-cardbg hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/50 p-10 rounded-2xl transition group flex items-center justify-center shadow-xl">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition duration-300 shadow-lg">
+                            <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        </div>
+                    </a>
+                    <a href="https://www.instagram.com/tuftactics_1/" target="_blank" class="bg-cardbg hover:bg-slate-800/80 border border-slate-800 hover:border-pink-500/50 p-10 rounded-2xl transition group flex items-center justify-center shadow-xl">
+                        <div class="w-16 h-16 rounded-2xl bg-pink-600/10 border border-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition duration-300 shadow-lg">
+                            <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </div>
+                    </a>
+                    <a href="https://www.youtube.com/@TufTactics" target="_blank" class="bg-cardbg hover:bg-slate-800/80 border border-slate-800 hover:border-red-500/50 p-10 rounded-2xl transition group flex items-center justify-center shadow-xl">
+                        <div class="w-16 h-16 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition duration-300 shadow-lg">
+                            <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER WITH CORPORATE LEGAL LINKS -->
+    <footer class="border-t border-slate-800 bg-[#08090e] py-8 text-center text-xs text-slate-500 space-y-3">
+        <div class="flex justify-center space-x-6">
+            <button onclick="openPolicyModal()" class="hover:text-blue-400 underline">Privacy Policy</button>
+            <button onclick="openTermsModal()" class="hover:text-blue-400 underline">Terms & Conditions</button>
+        </div>
+        <p>&copy; 2026 TufTactics. All Rights Reserved. Protected under International Copyright Laws & Information Technology Act.</p>
+    </footer>
+
+    <!-- CART MODAL -->
+    <div id="cartModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end">
+        <div class="bg-cardbg border-l border-slate-800 w-full max-w-md p-6 flex flex-col justify-between h-full">
+            <div class="space-y-6">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                    <h3 class="text-lg font-bold">🛒 Your Shopping Cart</h3>
+                    <button onclick="closeCart()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+                </div>
+                <div id="cartItemsList" class="space-y-4 max-h-[60vh] overflow-y-auto"><p class="text-xs text-slate-500">Your cart is empty.</p></div>
+            </div>
+            <div class="border-t border-slate-800 pt-4 space-y-4">
+                <div class="flex justify-between text-base font-bold"><span>Total:</span><span id="cartTotalPrice" class="text-emerald-400">₹0</span></div>
+                <button onclick="proceedToCheckout()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs">Proceed to UPI Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADDONS MODAL -->
+    <div id="addonsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4">
+            <h3 class="text-lg font-bold text-amber-400">⚠️ Required Assets Check</h3>
+            <div id="modalRequiredAssets" class="bg-darkbg p-3 rounded-xl text-xs text-blue-300 font-mono border border-slate-800"></div>
+            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer pt-2">
+                <input type="checkbox" id="acknowledgeCheckbox" class="rounded bg-darkbg border-slate-800">
+                <span>I confirm I own these add-ons.</span>
+            </label>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="confirmAddToCart()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs">Add to Cart</button>
+                <button onclick="closeAddonsModal()" class="w-full bg-slate-800 text-slate-300 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4">
+            <h3 class="text-lg font-bold text-blue-400 text-center">💳 UPI Secure Checkout</h3>
+            
+            <div class="bg-darkbg p-4 rounded-xl border border-slate-800 flex flex-col items-center space-y-3">
+                <div class="w-44 h-44 bg-white p-2 rounded-xl flex items-center justify-center shadow-md">
+                    <img src="upi-qr.png" alt="UPI QR Code" class="w-full h-full object-contain">
+                </div>
+                <div class="text-center space-y-1">
+                    <p class="text-xs text-slate-400">Scan via GPay / PhonePe / Paytm or pay to:</p>
+                    <div class="flex items-center justify-center space-x-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                        <span id="upiIdText" class="text-xs font-mono font-bold text-emerald-400">logeshkrishnan157-1@okicici</span>
+                        <button onclick="navigator.clipboard.writeText('logeshkrishnan157-1@okicici'); alert('UPI ID copied to clipboard!');" class="text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded font-semibold transition">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-1 text-xs text-slate-300 text-center">
+                <p class="text-amber-400 font-semibold">⚠️ Note: Manual Verification & Approval takes <b>4 to 6 Hours</b>.</p>
+            </div>
+
+            <form onsubmit="submitCheckout(event)" class="space-y-3">
+                <input type="text" id="transactionId" required placeholder="Enter UPI Transaction ID / UTR" class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 outline-none focus:border-blue-500">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Payment Screenshot (.jpg/.png)</label>
+                    <input type="file" id="screenshotFile" accept="image/*" required class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:bg-blue-600 file:text-white cursor-pointer">
+                </div>
+                <button type="submit" id="checkoutBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs">Submit Payment for Approval</button>
+            </form>
+            <button onclick="closeCheckoutModal()" class="w-full text-center text-xs text-slate-500 pt-1">Cancel</button>
+        </div>
+    </div>
+
+    <!-- MODALS FOR POLICY & TERMS -->
+    <div id="policyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold text-blue-400">🔒 Corporate Privacy Policy & Software Licensing</h3>
+            <div class="text-xs text-slate-300 space-y-3 max-h-64 overflow-y-auto leading-relaxed pr-2">
+                <p><b>1. Data Privacy & Compliance:</b> In strict adherence to the <b>Information Technology Act</b>, TufTactics collects authorized Google OAuth user credentials exclusively for secure account authentication, license validation, and software authorization.</p>
+                <p><b>2. Feature Scope & Compatibility:</b> The TufTactics AI Voice Assistant software is licensed strictly for Train Simulator Classic on PC/Laptops. The interactive AI voice radio feature operates exclusively on certified, official TufTactics scenario packages marked with the Voice AI feature flag.</p>
+                <p><b>3. Intellectual Property:</b> All scenario files, custom audio synthesis streams, UI architecture, and branding are protected under international <b>Copyright Acts</b>. Unauthorized redistribution, reverse engineering, or raw audio extraction is strictly prohibited.</p>
+            </div>
+            <button onclick="closePolicyModal()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs">Acknowledge & Close</button>
+        </div>
+    </div>
+
+    <div id="termsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold text-amber-400">📜 Corporate Terms & Conditions</h3>
+            <div class="text-xs text-slate-300 space-y-3 max-h-64 overflow-y-auto leading-relaxed pr-2">
+                <p><b>1. Payment & Verification Window:</b> All manual UPI transactions are verified against submitted UTR numbers and payment screenshots within a <b>4 to 6 Hours processing window</b>.</p>
+                <p><b>2. Strict No-Refund Policy:</b> Due to the immediate provisioning of digital software licenses, downloadable scenario GUID files, and consumable AI voice generation credits, all purchases are <b>final and strictly non-refundable</b>.</p>
+                <p><b>3. Software Usage Limitations:</b> TufTactics grants users a personal, non-transferable license to execute the desktop software and scenarios solely for personal simulation entertainment on supported PC hardware.</p>
+            </div>
+            <button onclick="closeTermsModal()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs">Acknowledge & Close</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const SUPABASE_URL = 'https://nqfrbqopnnymolnlqtni.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_H1UovZR34uvI9ZTsK0fNEg_76VBl1rR';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let cart = [], allScenarios = [], userPurchases = [], currentUserEmail = null, activeOffer = null;
+
+        async function loginWithGoogle() {
+            await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
+        }
+        async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
+
+        supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+            if (session) {
+                currentUserEmail = session.user.email;
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('userProfile').classList.remove('hidden');
+                document.getElementById('userDisplayName').innerText = `👤 ${currentUserEmail.split('@')[0]}`;
+                document.getElementById('dashboardBtn').classList.remove('hidden');
+                await loadUserPurchases();
+                
+                await supabaseClient.from('user_credits').upsert([{ user_email: currentUserEmail, updated_at: new Date() }], { onConflict: 'user_email' });
+            }
+            await fetchActiveOffer();
+            loadStore();
+            loadClientNews();
+        });
+
+        async function fetchActiveOffer() {
+            const { data } = await supabaseClient.from('offers').select('*').eq('is_active', true).order('id', { ascending: false }).limit(1);
+            if (data && data.length > 0) {
+                const o = data[0];
+                const now = new Date();
+                const start = new Date(o.start_time);
+                const end = new Date(o.end_time);
+
+                if (now >= start && now <= end) {
+                    activeOffer = o;
+                    const banner = document.getElementById('topOfferBanner');
+                    const text = document.getElementById('offerBannerText');
+                    text.innerText = `${o.title}: Flat ${o.discount_percent}% OFF on App, Scenarios & Voice Credits! Ends on ${end.toLocaleString()}`;
+                    banner.classList.remove('hidden');
+                }
+            }
+        }
+
+        function calculateDiscountedPrice(originalPrice) {
+            if (!activeOffer) return originalPrice;
+            let discounted = originalPrice - (originalPrice * activeOffer.discount_percent / 100);
+            return Math.round(discounted);
+        }
+
+        async function loadUserPurchases() {
+            if (!currentUserEmail) return;
+            const { data } = await supabaseClient.from('user_purchases').select('*').eq('user_email', currentUserEmail);
+            userPurchases = data || [];
+        }
+
+        async function loadClientNews() {
+            const { data } = await supabaseClient.from('news_updates').select('*').order('created_at', { ascending: false });
+            const newsContainer = document.getElementById('clientNewsList');
+            if (!data || data.length === 0) {
+                newsContainer.innerHTML = '<p class="text-center text-xs text-slate-500">No news updates posted yet.</p>';
+                return;
+            }
+            newsContainer.innerHTML = data.map(n => `
+                <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-2 shadow-lg">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span class="bg-blue-500/10 text-blue-400 font-bold px-2.5 py-0.5 rounded border border-blue-500/20">Official Update</span>
+                        <span>${new Date(n.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-100">${n.heading}</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">${n.content}</p>
+                </div>
+            `).join('');
+        }
+
+        async function loadStore() {
+            const appContainer = document.getElementById('appPriceContainer');
+            const creditsGrid = document.getElementById('creditsGrid');
+            const filterContainer = document.getElementById('routeFilters');
+            
+            const { data } = await supabaseClient.from('scenarios').select('*').order('created_at', { ascending: false });
+            allScenarios = data || [];
+
+            if (!currentUserEmail) {
+                appContainer.innerHTML = `
+                    <button onclick="loginWithGoogle()" class="w-full md:w-auto bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-6 py-3 rounded-xl shadow transition">🔐 Login to See Price & Buy</button>
+                `;
+            } else {
+                let baseAppPrice = 500;
+                let finalAppPrice = calculateDiscountedPrice(baseAppPrice);
+                let appPriceHTML = activeOffer ? `<span class="text-xs line-through text-slate-400">₹${baseAppPrice}</span> <span class="text-3xl font-black text-emerald-400">₹${finalAppPrice}</span>` : `<span class="text-3xl font-black text-emerald-400">₹${baseAppPrice}</span>`;
+
+                appContainer.innerHTML = `
+                    ${appPriceHTML}
+                    <button onclick="addAppToCart(${finalAppPrice})" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl shadow transition">Buy to Unlock App</button>
+                `;
+            }
+
+            if (!currentUserEmail) {
+                creditsGrid.innerHTML = `
+                    <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-lg text-center col-span-2 space-y-3">
+                        <h4 class="text-lg font-bold text-slate-200">Voice Assistant Credit Packages</h4>
+                        <p class="text-xs text-slate-400">Please sign in with your Google account to view prices and top up credits.</p>
+                        <button onclick="loginWithGoogle()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl mx-auto">🔐 Sign In to View Prices</button>
+                    </div>
+                `;
+            } else {
+                let c20 = calculateDiscountedPrice(50);
+                let c50 = calculateDiscountedPrice(100);
+
+                creditsGrid.innerHTML = `
+                    <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-lg relative">
+                        <div class="space-y-2">
+                            <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded font-bold uppercase">Starter Pack</span>
+                            <h4 class="text-xl font-bold text-slate-100">20 Voice Credits</h4>
+                            <p class="text-xs text-slate-400">Ideal for casual simulation runs and basic radio comms.</p>
+                        </div>
+                        <div class="pt-6 flex items-center justify-between">
+                            <div>
+                                ${activeOffer ? `<span class="text-xs line-through text-slate-400">₹50</span> <span class="text-2xl font-black text-emerald-400">₹${c20}</span>` : `<span class="text-2xl font-black text-emerald-400">₹50</span>`}
+                            </div>
+                            <button onclick="addCreditsToCart(20, ${c20})" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="bg-cardbg border border-blue-500/40 p-6 rounded-2xl flex flex-col justify-between shadow-lg relative bg-gradient-to-b from-blue-950/20 to-cardbg">
+                        <span class="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow">BEST VALUE 🔥</span>
+                        <div class="space-y-2">
+                            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded font-bold uppercase">Pro Pack</span>
+                            <h4 class="text-xl font-bold text-slate-100">50 Voice Credits</h4>
+                            <p class="text-xs text-slate-400">Best for heavy streaming and long-distance express runs.</p>
+                        </div>
+                        <div class="pt-6 flex items-center justify-between">
+                            <div>
+                                ${activeOffer ? `<span class="text-xs line-through text-slate-400">₹100</span> <span class="text-2xl font-black text-emerald-400">₹${c50}</span>` : `<span class="text-2xl font-black text-emerald-400">₹100</span>`}
+                            </div>
+                            <button onclick="addCreditsToCart(50, ${c50})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition">Add to Cart</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const uniqueRoutes = [...new Set(allScenarios.map(s => s.route_name))];
+            filterContainer.innerHTML = `<button onclick="filterScenarios('all')" class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl">All Routes</button>` +
+                uniqueRoutes.map(r => `<button onclick="filterScenarios('${r}')" class="bg-cardbg border border-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl hover:border-blue-500">${r}</button>`).join('');
+
+            renderScenarios(allScenarios);
+        }
+
+        function filterScenarios(route) {
+            if (route === 'all') renderScenarios(allScenarios);
+            else renderScenarios(allScenarios.filter(s => s.route_name === route));
+        }
+
+        function renderScenarios(scenarios) {
+            const grid = document.getElementById('scenarioGrid');
+            if (scenarios.length === 0) {
+                grid.innerHTML = '<p class="text-center text-slate-400 col-span-4">No scenarios available.</p>';
+                return;
+            }
+
+            grid.innerHTML = scenarios.map(scen => {
+                const purchase = userPurchases.find(p => p.scenario_id === scen.id);
+                let finalScenarioPrice = calculateDiscountedPrice(scen.price);
+                let actionBtn = !currentUserEmail ? `<button onclick="loginWithGoogle()" class="bg-amber-600/20 text-amber-400 border border-amber-500/30 font-bold text-xs px-3 py-2 rounded-xl transition">🔐 Login to see price</button>` : `<button onclick="promptAddons('${scen.id}', ${finalScenarioPrice})" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition">Add to Cart</button>`;
+                let badge = '';
+
+                if (purchase) {
+                    if (purchase.status === 'approved') {
+                        badge = `<span class="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">✓ Already Owned</span>`;
+                        actionBtn = `<span class="bg-slate-800 border border-slate-700 text-emerald-400 font-bold text-[11px] px-3.5 py-2 rounded-lg flex items-center space-x-1.5 shadow-sm"><span>🔒</span><span>Licensed & Installed via App</span></span>`;
+                    } else if (purchase.status === 'pending') {
+                        badge = `<span class="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">⏳ Pending (4-6h)</span>`;
+                        actionBtn = `<span class="text-xs text-amber-400 font-bold px-2 py-2">Verification Pending</span>`;
+                    }
+                }
+
+                let priceDisplay = currentUserEmail ? (activeOffer ? `<div class="flex flex-col"><span class="text-xs line-through text-slate-400">₹${scen.price}</span><span class="text-base font-extrabold text-emerald-400">₹${finalScenarioPrice}</span></div>` : `<span class="text-base font-extrabold text-emerald-400">₹${scen.price}</span>`) : `<span class="text-xs text-amber-400 font-semibold">Login required</span>`;
+
+                return `
+                    <div class="bg-cardbg border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between shadow-lg relative">
+                        ${badge}
+                        <div>
+                            <div class="h-36 bg-darkbg border-b border-slate-800 flex items-center justify-center overflow-hidden">
+                                ${scen.thumbnail_url ? `<img src="${scen.thumbnail_url}" class="w-full h-full object-cover">` : `<span class="text-3xl">🚂</span>`}
+                            </div>
+                            <div class="p-4 space-y-2">
+                                <div class="flex items-center space-x-1.5 flex-wrap gap-1">
+                                    <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold">${scen.scenario_code || '#SC000'}</span>
+                                    <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-bold">${scen.scenario_type || 'Standard'}</span>
+                                    <span class="text-[9px] text-slate-400">⏱️ ${scen.duration || 'N/A'}</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1 pt-1">
+                                    ${scen.support_voice ? '<span class="text-[8px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-semibold">🎙️ AI Voice Assistant</span>' : ''}
+                                    ${scen.player_boards ? '<span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-semibold">🎯 Player Train Boards</span>' : ''}
+                                    ${scen.ai_boards ? '<span class="text-[8px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-semibold">🤖 AI Train Boards</span>' : ''}
+                                </div>
+                                <h3 class="text-sm font-bold text-slate-100">${scen.title}</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed"><strong class="text-slate-300">Assets:</strong> ${scen.required_assets || 'Standard'}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-0 flex items-center justify-between">
+                            ${priceDisplay}
+                            ${actionBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addAppToCart(price) {
+            cart.push({ id: 'app_tuftactics_desktop', title: 'TufTactics TSC AI Voice Assistant App', price: price, item_type: 'app', credits_amount: 0 });
+            updateCartUI();
+            alert('TufTactics App added to cart!');
+        }
+
+        function addCreditsToCart(credits, price) {
+            cart.push({ id: `credits_${credits}`, title: `${credits} Voice Credits Topup`, price: price, item_type: 'credits', credits_amount: credits });
+            updateCartUI();
+            alert(`${credits} Voice Credits added to cart!`);
+        }
+
+        function promptAddons(id, price) {
+            const scen = allScenarios.find(s => s.id === id);
+            window.pendingScenarioToAdd = { ...scen, price };
+            document.getElementById('modalRequiredAssets').innerText = scen.required_assets || 'No special requirements.';
+            document.getElementById('acknowledgeCheckbox').checked = false;
+            document.getElementById('addonsModal').classList.remove('hidden');
+        }
+
+        function closeAddonsModal() { document.getElementById('addonsModal').classList.add('hidden'); }
+        function confirmAddToCart() {
+            if (!document.getElementById('acknowledgeCheckbox').checked) { alert('Please acknowledge required add-ons.'); return; }
+            cart.push({ ...window.pendingScenarioToAdd, item_type: 'scenario' });
+            updateCartUI();
+            closeAddonsModal();
+            alert('Scenario added to cart!');
+        }
+
+        function openCart() { document.getElementById('cartModal').classList.remove('hidden'); }
+        function closeCart() { document.getElementById('cartModal').classList.add('hidden'); }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.length;
+            const list = document.getElementById('cartItemsList');
+            let total = 0;
+
+            if (cart.length === 0) {
+                list.innerHTML = '<p class="text-xs text-slate-500">Your cart is empty.</p>';
+                document.getElementById('cartTotalPrice').innerText = '₹0';
+                return;
+            }
+
+            list.innerHTML = cart.map((item, index) => {
+                total += item.price;
+                return `
+                    <div class="flex justify-between items-center bg-darkbg p-3 rounded-xl border border-slate-800">
+                        <div>
+                            <p class="text-xs font-bold">${item.title}</p>
+                            <p class="text-[10px] text-emerald-400">₹${item.price}</p>
+                        </div>
+                        <button onclick="cart.splice(${index},1);updateCartUI();" class="text-red-400 text-xs">Remove</button>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('cartTotalPrice').innerText = `₹${total}`;
+        }
+
+        function proceedToCheckout() {
+            if (!currentUserEmail) { alert('Please sign in with Google first.'); return; }
+            if (cart.length === 0) { alert('Cart is empty.'); return; }
+            closeCart();
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
+
+        async function submitCheckout(e) {
+            e.preventDefault();
+            const btn = document.getElementById('checkoutBtn');
+            btn.innerText = 'Submitting...';
+            btn.disabled = true;
+
+            const txnId = document.getElementById('transactionId').value;
+            const fileInput = document.getElementById('screenshotFile');
+            const file = fileInput.files[0];
+
+            try {
+                const filePath = `payment_${Date.now()}_${file.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('scenarios-bucket').upload(filePath, file);
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabaseClient.storage.from('scenarios-bucket').getPublicUrl(filePath);
+
+                for (let item of cart) {
+                    await supabaseClient.from('user_purchases').insert([{
+                        user_email: currentUserEmail,
+                        scenario_id: item.item_type === 'scenario' ? item.id : null,
+                        item_type: item.item_type || 'scenario',
+                        credits_amount: item.credits_amount || 0,
+                        transaction_id: txnId,
+                        payment_screenshot_url: publicUrl,
+                        status: 'pending'
+                    }]);
+                }
+
+                alert('Order submitted successfully! Verification takes 4 to 6 Hours.');
+                cart = [];
+                updateCartUI();
+                closeCheckoutModal();
+                document.getElementById('checkoutModal').querySelector('form').reset();
+                
+                await loadUserPurchases();
+                renderScenarios(allScenarios);
+            } catch (err) {
+                alert('Checkout Error: ' + err.message);
+            } finally {
+                btn.innerText = 'Submit Payment for Approval';
+                btn.disabled = false;
+            }
+        }
+
+        async function submitBugReport(e) {
+            e.preventDefault();
+            if (!currentUserEmail) { alert('Please sign in with Google first.'); return; }
+            const feedbackType = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value;
+
+            let ticketId = null;
+            if (feedbackType !== 'User Review / Suggestion') {
+                const { count } = await supabaseClient.from('bug_reports').select('*', { count: 'exact', head: true });
+                let prefix = feedbackType === 'Bug Report / Glitch' ? 'BR' : 'FR';
+                ticketId = `#${prefix}${(count + 1).toString().padStart(3, '0')}`;
+            }
+
+            await supabaseClient.from('bug_reports').insert([{
+                user_email: currentUserEmail, feedback_type: feedbackType, message: message, ticket_id: ticketId, status: 'pending'
+            }]);
+
+            alert(ticketId ? `Ticket submitted successfully! ID: ${ticketId}` : 'Review submitted successfully!');
+            document.getElementById('feedbackMessage').value = '';
+        }
+
+        function openPolicyModal() { document.getElementById('policyModal').classList.remove('hidden'); }
+        function closePolicyModal() { document.getElementById('policyModal').classList.add('hidden'); }
+        function openTermsModal() { document.getElementById('termsModal').classList.remove('hidden'); }
+        function closeTermsModal() { document.getElementById('termsModal').classList.add('hidden'); }
+    </script>
+</body>
+</html>

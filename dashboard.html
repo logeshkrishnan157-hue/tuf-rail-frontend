@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TufTactics - User Dashboard & Support Tickets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#08090e',
+                        cardbg: '#11131c',
+                        accentblue: '#3b82f6',
+                        accentgreen: '#34d399'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+
+    <!-- HEADER -->
+    <header class="border-b border-slate-800 bg-[#08090e]/95 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <img src="TufTactics Logo.png" alt="TufTactics Logo" class="w-9 h-9 object-contain rounded-lg">
+                <h1 class="text-xl font-black text-blue-400">TUFTACTICS USER PORTAL</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="headerUserEmail" class="text-xs text-slate-300 font-semibold"></span>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">&larr; Back to Store</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="max-w-6xl mx-auto px-6 py-10 w-full space-y-8 flex-grow">
+        
+        <!-- LIVE ALERT BANNER FOR COMPLETED TICKETS -->
+        <div id="liveAlertBanner" class="hidden bg-emerald-500/10 border border-emerald-500/40 p-4 rounded-2xl flex items-center space-x-3 shadow-lg">
+            <span class="text-xl">🎉</span>
+            <div>
+                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wide">Live Update Alert!</h4>
+                <p id="liveAlertText" class="text-xs text-slate-300 mt-0.5"></p>
+            </div>
+        </div>
+
+        <!-- PROFILE & CREDITS OVERVIEW GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-2 shadow-lg">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Account Profile</p>
+                <h3 id="profileEmail" class="text-sm font-extrabold text-slate-200 truncate">Loading...</h3>
+                <p class="text-[11px] text-emerald-400">● Google Account Connected</p>
+            </div>
+
+            <!-- DESKTOP APP LICENSE KEY CARD -->
+            <div class="bg-cardbg border border-blue-500/40 p-6 rounded-2xl space-y-2 shadow-lg relative bg-gradient-to-b from-blue-950/20 to-cardbg">
+                <p class="text-xs font-bold text-blue-400 uppercase tracking-wider">🔑 Desktop App License Key</p>
+                <div class="flex items-center space-x-2 pt-1">
+                    <input type="text" id="licenseKeyDisplay" readonly class="w-full bg-darkbg border border-slate-800 rounded-lg p-2 text-xs text-emerald-400 font-mono" value="Generating...">
+                    <button onclick="copyLicenseKey()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-2 rounded-lg transition shrink-0">Copy</button>
+                </div>
+                <p class="text-[10px] text-slate-400">Paste this key in your desktop app.</p>
+            </div>
+
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-2 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Voice Assistant Credits</p>
+                <div class="flex items-baseline space-x-2">
+                    <span id="userCreditBalance" class="text-3xl font-black text-blue-400">0</span>
+                    <span class="text-xs text-slate-400 font-semibold">Credits Available</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Used for Guard, Station Master & ALP AI Radio.</p>
+            </div>
+
+            <div id="buyCreditsCard" class="bg-cardbg border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-lg">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Need More Credits?</p>
+                    <p class="text-xs text-slate-300 mt-1">Top up instantly via UPI packages.</p>
+                </div>
+                <a href="index.html#store" class="mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl text-center transition shadow-md">⚡ Buy Voice Credits</a>
+            </div>
+        </div>
+
+        <!-- STRICT APP-OWNER ONE-TIME FREE CLAIM CARD -->
+        <div id="freeClaimCard" class="bg-cardbg border border-amber-500/40 p-6 rounded-2xl flex flex-col justify-between shadow-lg relative bg-gradient-to-b from-amber-950/20 to-cardbg hidden">
+            <div>
+                <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold uppercase">App Owner Bonus</span>
+                <h3 class="text-sm font-bold text-slate-100 mt-2">Claim Free 150 Voice Credits</h3>
+                <p id="claimStatusText" class="text-[11px] text-slate-400 mt-1">Verified App Buyer Exclusive (One-Time Only).</p>
+            </div>
+            <button id="claimBtn" onclick="claimFreeCredits()" class="mt-4 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-md">🎁 Claim 150 Free Credits</button>
+        </div>
+
+        <!-- MY TICKETS & SUPPORT QUERIES -->
+        <div class="bg-cardbg border border-slate-800 p-8 rounded-2xl space-y-6 shadow-xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <h3 class="text-lg font-bold text-slate-100">🎫 My Support Tickets & Bug Reports</h3>
+                <span class="text-xs text-slate-400">Track status of your bug reports & feature requests</span>
+            </div>
+            <div id="userTicketsList" class="space-y-3">
+                <p class="text-xs text-slate-500">Loading your support tickets...</p>
+            </div>
+        </div>
+
+        <!-- USER PURCHASES & ORDERS SECTION -->
+        <div class="bg-cardbg border border-slate-800 p-8 rounded-2xl space-y-6 shadow-xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <h3 class="text-lg font-bold text-slate-100">📦 My Purchased App, Scenarios & Orders</h3>
+                <button onclick="loadDashboardData()" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center space-x-1.5 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-lg transition shadow-sm">
+                    <span>🔄</span><span>Refresh Status</span>
+                </button>
+            </div>
+            
+            <div id="userOrdersList" class="space-y-4">
+                <p class="text-xs text-slate-500">Loading your order history...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 bg-[#08090e] py-6 text-center text-xs text-slate-500">
+        <p>&copy; 2026 TufTactics Portal. All rights reserved.</p>
+    </footer>
+
+    <!-- SCRIPT -->
+    <script>
+        const SUPABASE_URL = 'https://nqfrbqopnnymolnlqtni.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_H1UovZR34uvI9ZTsK0fNEg_76VBl1rR';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUserEmail = null;
+        let hasApprovedApp = false;
+
+        supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+            if (!session) {
+                alert('Please sign in with Google first.');
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUserEmail = session.user.email;
+            document.getElementById('headerUserEmail').innerText = currentUserEmail;
+            document.getElementById('profileEmail').innerText = currentUserEmail;
+
+            await loadOrGenerateLicenseKey();
+            await loadDashboardData();
+        });
+
+        async function loadOrGenerateLicenseKey() {
+            let { data, error } = await supabaseClient.from('user_credits').select('license_key, credits').eq('user_email', currentUserEmail).single();
+            let key = data?.license_key;
+            
+            if (!key) {
+                key = 'TUF-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
+                await supabaseClient.from('user_credits').upsert([
+                    { 
+                        user_email: currentUserEmail, 
+                        license_key: key, 
+                        credits: data?.credits || 150, 
+                        updated_at: new Date() 
+                    }
+                ], { onConflict: 'user_email' });
+            }
+            document.getElementById('licenseKeyDisplay').value = key;
+        }
+
+        function copyLicenseKey() {
+            const copyText = document.getElementById('licenseKeyDisplay');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert('License Key copied to clipboard!');
+        }
+
+        async function fetchUserCredits() {
+            const { data } = await supabaseClient.from('user_credits').select('*').eq('user_email', currentUserEmail).single();
+            const currentCredits = data ? (data.credits || 0) : 0;
+            document.getElementById('userCreditBalance').innerText = currentCredits;
+
+            const freeClaimCard = document.getElementById('freeClaimCard');
+            const claimBtn = document.getElementById('claimBtn');
+            const statusText = document.getElementById('claimStatusText');
+
+            if (hasApprovedApp) {
+                freeClaimCard.classList.remove('hidden');
+                if (data && data.has_claimed_free_credits) {
+                    claimBtn.innerText = '✔ Already Claimed (150 Credits)';
+                    claimBtn.disabled = true;
+                    claimBtn.classList.add('bg-slate-700', 'cursor-not-allowed');
+                    claimBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+                    statusText.innerText = 'One-time bonus already redeemed.';
+                }
+            } else {
+                freeClaimCard.classList.add('hidden');
+            }
+        }
+
+        async function loadDashboardData() {
+            const ordersList = document.getElementById('userOrdersList');
+            const ticketContainer = document.getElementById('userTicketsList');
+
+            const { data: purchases, error } = await supabaseClient
+                .from('user_purchases')
+                .select('*, scenarios(title, zip_file_url, thumbnail_url, scenario_type, required_assets, route_name)')
+                .eq('user_email', currentUserEmail)
+                .order('created_at', { ascending: false });
+
+            if (error || !purchases || purchases.length === 0) {
+                ordersList.innerHTML = '<p class="text-xs text-slate-500">You have no order history yet.</p>';
+                hasApprovedApp = false;
+                await fetchUserCredits();
+            } else {
+                hasApprovedApp = purchases.some(p => p.item_type === 'app' && p.status === 'approved');
+                await fetchUserCredits();
+
+                ordersList.innerHTML = purchases.map(p => {
+                    let titleDisplay = p.item_type === 'credits' ? `⚡ Voice Credit Topup (${p.credits_amount} Credits)` : 
+                                       p.item_type === 'app' ? `🚀 TufTactics AI Voice Assistant App` : 
+                                       (p.scenarios?.title || 'Scenario Pack');
+                    
+                    let thumbDisplay = p.item_type === 'credits' ? '⚡' : (p.item_type === 'app' ? '🚀' : '🚂');
+
+                    let scenarioTypeBadge = p.scenarios?.scenario_type ? `<span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded">${p.scenarios.scenario_type}</span>` : '';
+                    let assetsText = p.scenarios?.required_assets ? `<p class="text-[11px] text-slate-400 leading-relaxed"><strong class="text-slate-300">Assets:</strong> ${p.scenarios.required_assets}</p>` : '';
+
+                    let actionElement = '';
+                    if (p.status === 'approved') {
+                        if (p.item_type === 'scenario') {
+                            actionElement = `<span class="bg-slate-800 border border-slate-700 text-emerald-400 font-bold text-[11px] px-3.5 py-2 rounded-lg flex items-center space-x-1.5 shadow-sm"><span>🔒</span><span>Licensed & Installed via App</span></span>`;
+                        } else if (p.item_type === 'credits') {
+                            actionElement = `<span class="text-xs text-emerald-400 font-bold">✔ Credits Credited</span>`;
+                        } else if (p.item_type === 'app') {
+                            actionElement = `<a href="https://github.com/tuftactics/tuf-app-release" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition">📦 Download App (GitHub)</a>`;
+                        }
+                    } else {
+                        actionElement = `<span class="text-xs text-slate-500">${p.status === 'rejected' ? 'Rejected by Admin' : 'Pending Verification (4-6h)'}</span>`;
+                    }
+
+                    return `
+                        <div class="bg-darkbg border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-10 bg-slate-800 rounded-lg overflow-hidden flex items-center justify-center text-xl">${thumbDisplay}</div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <p class="text-xs font-bold text-slate-200">${titleDisplay}</p>
+                                        ${scenarioTypeBadge}
+                                    </div>
+                                    ${assetsText}
+                                    <p class="text-[10px] text-slate-500">UTR: ${p.transaction_id || 'N/A'} | Submitted: ${new Date(p.created_at).toLocaleString()}</p>
+                                    <p class="text-[11px] font-bold ${p.status === 'approved' ? 'text-emerald-400' : p.status === 'rejected' ? 'text-red-400' : 'text-amber-400'}">Status: ${p.status.toUpperCase()}</p>
+                                </div>
+                            </div>
+                            <div>${actionElement}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const { data: tickets } = await supabaseClient
+                .from('bug_reports')
+                .select('*')
+                .eq('user_email', currentUserEmail)
+                .order('created_at', { ascending: false });
+
+            const completedTickets = tickets?.filter(t => t.status === 'completed');
+            if (completedTickets && completedTickets.length > 0) {
+                document.getElementById('liveAlertBanner').classList.remove('hidden');
+                document.getElementById('liveAlertText').innerText = `Your ticket ${completedTickets[0].ticket_id} (${completedTickets[0].feedback_type}) has been fixed, completed, and pushed to live!`;
+            }
+
+            ticketContainer.innerHTML = (!tickets || tickets.length === 0) ? '<p class="text-xs text-slate-500">No support tickets raised yet.</p>' :
+                tickets.map(t => `
+                    <div class="bg-darkbg p-4 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-bold">${t.ticket_id || '#GENERAL'}</span>
+                                <span class="text-slate-300 font-bold">${t.feedback_type}</span>
+                            </div>
+                            <p class="text-slate-400 leading-relaxed">${t.message}</p>
+                        </div>
+                        <div>
+                            <span class="px-3 py-1 rounded-full font-bold text-[10px] ${t.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">${t.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        async function claimFreeCredits() {
+            if (!hasApprovedApp) {
+                alert('Access Denied: You must purchase and get admin approval for the TufTactics App before claiming free credits.');
+                return;
+            }
+
+            try {
+                const { data: existing } = await supabaseClient.from('user_credits').select('*').eq('user_email', currentUserEmail).single();
+                
+                if (existing && existing.has_claimed_free_credits) {
+                    alert('You have already claimed your one-time free 150 voice credits!');
+                    return;
+                }
+
+                const currentBal = existing ? (existing.credits || 0) : 0;
+                const newTotal = currentBal + 150;
+
+                if (existing) {
+                    await supabaseClient.from('user_credits')
+                        .update({ credits: newTotal, has_claimed_free_credits: true, updated_at: new Date() })
+                        .eq('user_email', currentUserEmail);
+                } else {
+                    await supabaseClient.from('user_credits')
+                        .insert([{ user_email: currentUserEmail, credits: 150, has_claimed_free_credits: true }]);
+                }
+
+                alert('🎉 Success! 150 Free Voice Credits added to your account.');
+                location.reload();
+            } catch (err) {
+                alert('Claim Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TufTactics - Admin Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { darkbg: '#08090e', cardbg: '#11131c', accentblue: '#3b82f6' } } }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-slate-100 font-sans min-h-screen p-6 flex flex-col justify-between">
+
+    <!-- HEADER -->
+    <header class="max-w-5xl mx-auto w-full flex justify-between items-center border-b border-slate-800 pb-4">
+        <div class="flex items-center space-x-3">
+            <img src="TufTactics Logo.png" alt="TufTactics Logo" class="w-9 h-9 object-contain rounded-lg">
+            <h1 class="text-2xl font-black text-blue-400">TufTactics Admin Dashboard</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span id="adminEmailDisplay" class="text-xs text-slate-400"></span>
+            <a href="index.html" class="text-xs text-slate-400 hover:text-white">&larr; Back to Store</a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-5xl mx-auto w-full py-8 space-y-8 flex-grow">
+
+        <!-- AUTH GATE -->
+        <div id="authGate" class="bg-cardbg border border-slate-800 p-8 rounded-2xl text-center space-y-4">
+            <h2 class="text-xl font-bold text-red-400">🔒 Restricted Admin Access</h2>
+            <p class="text-xs text-slate-400">Sign in with authorized Admin Google account (`logeshkrishnan`).</p>
+            <button onclick="loginAdmin()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition">🔐 Sign in as Admin</button>
+        </div>
+
+        <!-- ADMIN PANEL -->
+        <div id="adminPanel" class="hidden space-y-8">
+            
+            <!-- FINANCIAL & CREDITS ANALYTICS OVERVIEW -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-cardbg border border-emerald-500/40 p-6 rounded-2xl space-y-2 bg-gradient-to-b from-emerald-950/20 to-cardbg shadow-xl">
+                    <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider">💰 Total Revenue (Approved Orders)</p>
+                    <div class="flex items-baseline space-x-2">
+                        <span id="totalRevenueDisplay" class="text-3xl font-black text-emerald-400">₹0</span>
+                        <span class="text-xs text-slate-400 font-semibold">From UPI Sales</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Calculated from all approved app, credits & scenario orders.</p>
+                </div>
+
+                <div class="bg-cardbg border border-blue-500/40 p-6 rounded-2xl space-y-2 bg-gradient-to-b from-blue-950/20 to-cardbg shadow-xl">
+                    <p class="text-xs font-bold text-blue-400 uppercase tracking-wider">⚡ Total Circulating User Credits</p>
+                    <div class="flex items-baseline space-x-2">
+                        <span id="totalCreditsDisplay" class="text-3xl font-black text-blue-400">0</span>
+                        <span class="text-xs text-slate-400 font-semibold">Credits Held by Users</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Combined sum of all active user balances.</p>
+                </div>
+            </div>
+
+            <!-- STATS & REGISTERED USERS SECTION -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <h2 class="text-lg font-bold">👥 Registered Users Statistics</h2>
+                    <div class="flex items-baseline space-x-2">
+                        <span id="userCount" class="text-3xl font-black text-blue-400">0</span>
+                        <span class="text-xs text-slate-400 font-semibold">Total Logged-in Users</span>
+                    </div>
+                    <div id="usersList" class="space-y-2 max-h-40 overflow-y-auto pt-2 border-t border-slate-800">
+                        <p class="text-xs text-slate-500">Loading users...</p>
+                    </div>
+                </div>
+
+                <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <h2 class="text-lg font-bold">💡 Quick Admin Actions</h2>
+                    <p class="text-xs text-slate-400 leading-relaxed">Manage store items, schedule festive offers, approve UPI payments, and resolve support tickets.</p>
+                    <div class="pt-4 flex gap-3">
+                        <a href="#pendingList" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl transition">View Pending Payments</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FESTIVE OFFER SCHEDULER SECTION -->
+            <div class="bg-cardbg border border-amber-500/40 p-6 rounded-2xl space-y-4 bg-gradient-to-b from-amber-950/10 to-cardbg">
+                <h2 class="text-lg font-bold text-amber-400">🎉 Schedule Festival / Flash Sale Offer</h2>
+                <form id="offerForm" onsubmit="saveOffer(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Offer Title (e.g. Diwali Mega Sale)</label>
+                            <input type="text" id="offerTitle" required placeholder="Diwali Mega Sale" class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Discount Percentage (%)</label>
+                            <input type="number" id="discountPercent" required placeholder="30" min="1" max="99" class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">From Date & Time</label>
+                            <input type="datetime-local" id="startTime" required class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">To Date & Time</label>
+                            <input type="datetime-local" id="endTime" required class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition">🚀 Launch & Apply Offer</button>
+                        <button type="button" onclick="clearActiveOffer()" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white font-bold text-xs px-4 py-3 rounded-xl transition">Stop Active Offer</button>
+                    </div>
+                </form>
+                <div id="activeOfferStatus" class="text-xs text-slate-400 pt-2 font-mono">Checking active offers...</div>
+            </div>
+
+            <!-- Upload & Edit Scenario Section -->
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-4">
+                <h2 id="scenarioFormTitle" class="text-lg font-bold">Upload New Scenario Package</h2>
+                <form id="uploadForm" onsubmit="saveScenario(event)" class="space-y-4">
+                    <input type="hidden" id="editScenarioId">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Scenario Title</label>
+                            <input type="text" id="title" required class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Route Name</label>
+                            <input type="text" id="routeName" required class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Duration (e.g., 45 Mins)</label>
+                            <input type="text" id="duration" required placeholder="e.g. 1h 15m" class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Price (₹)</label>
+                            <input type="number" id="price" required class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Scenario Type (e.g. Express / Srv2)</label>
+                            <input type="text" id="scenarioType" required placeholder="e.g. Express / Srv2" class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Thumbnail (.jpg/.png)</label>
+                            <input type="file" id="thumbnailFile" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-slate-800 file:text-white cursor-pointer">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Required Assets (Comma Separated)</label>
+                            <input type="text" id="requiredAssets" required placeholder="e.g. FLG - Wap 7, Wap 4, Wag 9, LHB, EMU" class="w-full bg-darkbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Scenario GUID Folder (.zip)</label>
+                            <input type="file" id="zipFile" accept=".zip" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-blue-600 file:text-white cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Feature Toggles -->
+                    <div class="bg-darkbg p-4 rounded-xl border border-slate-800 space-y-3">
+                        <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">Scenario Included Features</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="supportVoice" class="rounded bg-cardbg border-slate-700 text-blue-600">
+                                <span>🎙️ Support Voice Assistant</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="playerBoards" class="rounded bg-cardbg border-slate-700 text-blue-600">
+                                <span>🎯 Player Train Destination Boards</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="aiBoards" class="rounded bg-cardbg border-slate-700 text-blue-600">
+                                <span>🤖 AI Train Destination Boards</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button type="submit" id="uploadBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition">Publish Scenario</button>
+                        <button type="button" onclick="resetScenarioForm()" class="bg-slate-800 text-slate-300 font-bold text-xs px-4 py-3 rounded-xl">Cancel / Reset</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Manage News & Updates Section -->
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-4">
+                <h2 class="text-lg font-bold">📰 Manage News & Updates</h2>
+                <form id="newsForm" onsubmit="saveNews(event)" class="space-y-4 bg-darkbg p-4 rounded-xl border border-slate-800">
+                    <input type="hidden" id="newsId">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">News Heading</label>
+                        <input type="text" id="newsHeading" required class="w-full bg-cardbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">News Content / Details</label>
+                        <textarea id="newsContent" rows="3" required class="w-full bg-cardbg border border-slate-800 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" id="newsSubmitBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition">Publish News</button>
+                        <button type="button" onclick="resetNewsForm()" class="bg-slate-800 text-slate-300 font-bold text-xs px-4 py-2.5 rounded-xl">Cancel / Reset</button>
+                    </div>
+                </form>
+                <div id="adminNewsList" class="space-y-3 pt-2"><p class="text-xs text-slate-500">Loading news...</p></div>
+            </div>
+
+            <!-- Pending UPI Payments -->
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-4">
+                <h2 class="text-lg font-bold">💳 Pending UPI Payment Approvals</h2>
+                <div id="pendingList" class="space-y-3"><p class="text-xs text-slate-500">Loading pending requests...</p></div>
+            </div>
+
+            <!-- Active Support Tickets -->
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-4">
+                <h2 class="text-lg font-bold">🎫 Active Support Tickets</h2>
+                <div id="bugReportsList" class="space-y-3"><p class="text-xs text-slate-500">Loading tickets...</p></div>
+            </div>
+
+            <!-- Manage Scenarios Section -->
+            <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl space-y-4">
+                <h2 class="text-lg font-bold">Manage Published Scenarios</h2>
+                <div id="scenariosList" class="space-y-3"><p class="text-xs text-slate-500">Loading scenarios...</p></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-5xl mx-auto w-full border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
+        <p>&copy; 2026 TufTactics. Admin Secure Portal.</p>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://nqfrbqopnnymolnlqtni.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_H1UovZR34uvI9ZTsK0fNEg_76VBl1rR';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const ADMIN_EMAIL = 'logeshkrishnan';
+
+        async function loginAdmin() {
+            await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
+        }
+
+        async function checkAdminSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user.email.includes(ADMIN_EMAIL)) {
+                document.getElementById('authGate').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                document.getElementById('adminEmailDisplay').innerText = `Admin: ${session.user.email}`;
+                loadRegisteredUsers();
+                loadFinancialAnalytics();
+                loadAdminScenarios();
+                loadAdminNews();
+                loadPendingApprovals();
+                loadBugReports();
+                loadActiveOffer();
+            } else if (session) {
+                alert('Access Denied');
+                await supabaseClient.auth.signOut();
+                location.reload();
+            }
+        }
+
+        async function loadRegisteredUsers() {
+            const { data } = await supabaseClient.from('user_credits').select('user_email, credits, updated_at');
+            const container = document.getElementById('usersList');
+            document.getElementById('userCount').innerText = data ? data.length : 0;
+            if (!data || data.length === 0) { container.innerHTML = '<p class="text-xs text-slate-500">No registered users found.</p>'; return; }
+            container.innerHTML = data.map(u => `
+                <div class="bg-darkbg p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                    <span class="font-bold text-slate-200">👤 ${u.user_email.split('@')[0]}</span>
+                    <span class="text-emerald-400 font-semibold">Credits: ${u.credits}</span>
+                </div>
+            `).join('');
+        }
+
+        async function loadFinancialAnalytics() {
+            const { data: creditsData } = await supabaseClient.from('user_credits').select('credits');
+            let totalCredits = 0;
+            if (creditsData) {
+                totalCredits = creditsData.reduce((sum, row) => sum + (row.credits || 0), 0);
+            }
+            document.getElementById('totalCreditsDisplay').innerText = totalCredits;
+
+            const { data: purchasesData } = await supabaseClient.from('user_purchases').select('item_type, credits_amount, scenario_id, status, scenarios(price)').eq('status', 'approved');
+            let totalRevenue = 0;
+            if (purchasesData) {
+                purchasesData.forEach(p => {
+                    if (p.item_type === 'app') {
+                        totalRevenue += 500;
+                    } else if (p.item_type === 'credits') {
+                        if (p.credits_amount >= 50) totalRevenue += 100;
+                        else totalRevenue += 50;
+                    } else if (p.item_type === 'scenario' && p.scenarios) {
+                        totalRevenue += (p.scenarios.price || 0);
+                    }
+                });
+            }
+            document.getElementById('totalRevenueDisplay').innerText = `₹${totalRevenue}`;
+        }
+
+        async function saveOffer(e) {
+            e.preventDefault();
+            const title = document.getElementById('offerTitle').value;
+            const discount_percent = parseInt(document.getElementById('discountPercent').value);
+            const start_time = document.getElementById('startTime').value;
+            const end_time = document.getElementById('endTime').value;
+
+            await supabaseClient.from('offers').update({ is_active: false }).neq('id', 0);
+            const { error } = await supabaseClient.from('offers').insert([{ title, discount_percent, start_time, end_time, is_active: true }]);
+            if (error) { alert('Error: ' + error.message); return; }
+
+            alert('🎉 Festive Offer Published & Live on Store!');
+            loadActiveOffer();
+        }
+
+        async function loadActiveOffer() {
+            const { data } = await supabaseClient.from('offers').select('*').eq('is_active', true).order('id', { ascending: false }).limit(1);
+            const statusDiv = document.getElementById('activeOfferStatus');
+            if (!data || data.length === 0) {
+                statusDiv.innerHTML = '<span class="text-slate-500">No active festival offer running right now.</span>';
+                return;
+            }
+            const o = data[0];
+            statusDiv.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Active Offer: ${o.title} (${o.discount_percent}% OFF)</span> | From: ${new Date(o.start_time).toLocaleString()} To: ${new Date(o.end_time).toLocaleString()}`;
+        }
+
+        async function clearActiveOffer() {
+            await supabaseClient.from('offers').update({ is_active: false }).eq('is_active', true);
+            alert('Offer stopped successfully!');
+            loadActiveOffer();
+        }
+
+        async function saveScenario(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editScenarioId').value;
+            const title = document.getElementById('title').value;
+            const routeName = document.getElementById('routeName').value.trim();
+            const duration = document.getElementById('duration').value.trim();
+            const price = parseFloat(document.getElementById('price').value);
+            const scenarioType = document.getElementById('scenarioType').value.trim();
+            const requiredAssets = document.getElementById('requiredAssets').value.trim();
+            const supportVoice = document.getElementById('supportVoice').checked;
+            const playerBoards = document.getElementById('playerBoards').checked;
+            const aiBoards = document.getElementById('aiBoards').checked;
+            const zipFile = document.getElementById('zipFile').files[0];
+            const thumbFile = document.getElementById('thumbnailFile').files[0];
+
+            let zipUrl = null, thumbUrl = null;
+
+            if (zipFile) {
+                const zipPath = `scenario_${Date.now()}_${zipFile.name}`;
+                await supabaseClient.storage.from('scenarios-bucket').upload(zipPath, zipFile);
+                const { data: { publicUrl } } = supabaseClient.storage.from('scenarios-bucket').getPublicUrl(zipPath);
+                zipUrl = publicUrl;
+            }
+            if (thumbFile) {
+                const thumbPath = `thumb_${Date.now()}_${thumbFile.name}`;
+                await supabaseClient.storage.from('scenarios-bucket').upload(thumbPath, thumbFile);
+                const { data: { publicUrl } } = supabaseClient.storage.from('scenarios-bucket').getPublicUrl(thumbPath);
+                thumbUrl = publicUrl;
+            }
+
+            if (editId) {
+                let updateData = { 
+                    title, 
+                    route_name: routeName, 
+                    duration, 
+                    price, 
+                    scenario_type: scenarioType, 
+                    required_assets: requiredAssets, 
+                    support_voice: supportVoice, 
+                    player_boards: playerBoards, 
+                    ai_boards: aiBoards 
+                };
+                if (zipUrl) updateData.zip_file_url = zipUrl;
+                if (thumbUrl) updateData.thumbnail_url = thumbUrl;
+
+                const { error: updateErr } = await supabaseClient.from('scenarios').update(updateData).eq('id', editId);
+                if (updateErr) {
+                    alert('Update Error: ' + updateErr.message);
+                    return;
+                }
+                alert('Scenario updated successfully!');
+            } else {
+                if (!zipFile || !thumbFile) { alert('Please select both zip and thumbnail files.'); return; }
+                const { count } = await supabaseClient.from('scenarios').select('*', { count: 'exact', head: true });
+                const scenarioCode = `#SC${(count + 1).toString().padStart(3, '0')}`;
+
+                const { error: insertErr } = await supabaseClient.from('scenarios').insert([{ 
+                    title, 
+                    route_name: routeName, 
+                    duration, 
+                    price, 
+                    scenario_type: scenarioType, 
+                    required_assets: requiredAssets, 
+                    zip_file_url: zipUrl, 
+                    thumbnail_url: thumbUrl, 
+                    scenario_code: scenarioCode,
+                    support_voice: supportVoice, 
+                    player_boards: playerBoards, 
+                    ai_boards: aiBoards
+                }]);
+                if (insertErr) {
+                    alert('Insert Error: ' + insertErr.message);
+                    return;
+                }
+                alert(`Scenario published successfully with Code: ${scenarioCode}!`);
+            }
+
+            resetScenarioForm();
+            loadAdminScenarios();
+        }
+
+        async function editScenario(id) {
+            const { data } = await supabaseClient.from('scenarios').select('*').eq('id', id).single();
+            if (!data) return;
+            document.getElementById('editScenarioId').value = data.id;
+            document.getElementById('title').value = data.title;
+            document.getElementById('routeName').value = data.route_name;
+            document.getElementById('duration').value = data.duration;
+            document.getElementById('price').value = data.price;
+            document.getElementById('scenarioType').value = data.scenario_type || '';
+            document.getElementById('requiredAssets').value = data.required_assets || '';
+            document.getElementById('supportVoice').checked = data.support_voice;
+            document.getElementById('playerBoards').checked = data.player_boards;
+            document.getElementById('aiBoards').checked = data.ai_boards;
+            document.getElementById('scenarioFormTitle').innerText = `Edit Scenario (${data.scenario_code})`;
+            document.getElementById('uploadBtn').innerText = 'Update Scenario';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetScenarioForm() {
+            document.getElementById('uploadForm').reset();
+            document.getElementById('editScenarioId').value = '';
+            document.getElementById('scenarioFormTitle').innerText = 'Upload New Scenario Package';
+            document.getElementById('uploadBtn').innerText = 'Publish Scenario';
+        }
+
+        async function loadAdminScenarios() {
+            const { data } = await supabaseClient.from('scenarios').select('*').order('created_at', { ascending: false });
+            document.getElementById('scenariosList').innerHTML = (!data || data.length === 0) ? '<p class="text-xs text-slate-500">No scenarios found.</p>' :
+                data.map(s => `
+                    <div class="flex items-center justify-between bg-darkbg border border-slate-800 p-4 rounded-xl">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-12 bg-slate-800 rounded-lg overflow-hidden">${s.thumbnail_url ? `<img src="${s.thumbnail_url}" class="w-full h-full object-cover">` : '🚂'}</div>
+                            <div>
+                                <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold">${s.scenario_code || '#SC000'}</span>
+                                <h4 class="text-sm font-bold mt-1">${s.title} - ₹${s.price} (${s.duration || 'N/A'}) [Type: ${s.scenario_type || 'Standard'}]</h4>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editScenario('${s.id}')" class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 text-xs px-3 py-1.5 rounded-lg">Edit</button>
+                            <button onclick="deleteScenario('${s.id}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 text-xs px-3 py-1.5 rounded-lg">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        async function deleteScenario(id) {
+            if (confirm('Delete scenario?')) {
+                await supabaseClient.from('scenarios').delete().eq('id', id);
+                loadAdminScenarios();
+            }
+        }
+
+        async function saveNews(e) {
+            e.preventDefault();
+            const id = document.getElementById('newsId').value;
+            const heading = document.getElementById('newsHeading').value;
+            const content = document.getElementById('newsContent').value;
+
+            if (id) {
+                await supabaseClient.from('news_updates').update({ heading, content }).eq('id', id);
+            } else {
+                await supabaseClient.from('news_updates').insert([{ heading, content }]);
+            }
+            resetNewsForm(); loadAdminNews(); alert('News saved!');
+        }
+
+        async function loadAdminNews() {
+            const { data } = await supabaseClient.from('news_updates').select('*').order('created_at', { ascending: false });
+            document.getElementById('adminNewsList').innerHTML = (!data || data.length === 0) ? '<p class="text-xs text-slate-500">No news updates posted yet.</p>' :
+                data.map(n => `
+                    <div class="flex justify-between items-center bg-darkbg p-4 rounded-xl border border-slate-800">
+                        <div><h4 class="text-xs font-bold text-blue-400">${n.heading}</h4><p class="text-[11px] text-slate-300">${n.content}</p></div>
+                        <button onclick="deleteNews('${n.id}')" class="bg-red-600/20 text-red-400 text-xs px-3 py-1 rounded-lg">Delete</button>
+                    </div>
+                `).join('');
+        }
+        function resetNewsForm() { document.getElementById('newsForm').reset(); document.getElementById('newsId').value = ''; }
+        async function deleteNews(id) { await supabaseClient.from('news_updates').delete().eq('id', id); loadAdminNews(); }
+
+        async function loadPendingApprovals() {
+            const { data } = await supabaseClient.from('user_purchases').select('*, scenarios(title, thumbnail_url)').eq('status', 'pending');
+            document.getElementById('pendingList').innerHTML = (!data || data.length === 0) ? '<p class="text-xs text-slate-500">No pending payments.</p>' :
+                data.map(item => `
+                    <div class="flex items-center justify-between bg-darkbg border border-slate-800 p-4 rounded-xl text-xs">
+                        <div><b>${item.item_type === 'app' ? 'App (₹500)' : item.item_type === 'credits' ? `${item.credits_amount} Credits` : item.scenarios?.title}</b> - User: ${item.user_email} | UTR: ${item.transaction_id}
+                        <a href="${item.payment_screenshot_url}" target="_blank" class="text-blue-400 underline block">View Screenshot</a></div>
+                        <div class="space-x-2">
+                            <button onclick="updatePayment('${item.id}', 'approved', '${item.user_email}', '${item.item_type}', ${item.credits_amount})" class="bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg">Approve</button>
+                            <button onclick="updatePayment('${item.id}', 'rejected', '${item.user_email}', '${item.item_type}', ${item.credits_amount})" class="bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        async function loadBugReports() {
+            const { data } = await supabaseClient.from('bug_reports').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+            document.getElementById('bugReportsList').innerHTML = (!data || data.length === 0) ? '<p class="text-xs text-slate-500">No active support tickets.</p>' :
+                data.map(b => `
+                    <div class="bg-darkbg border border-slate-800 p-4 rounded-xl flex justify-between items-start text-xs">
+                        <div><span class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold">${b.ticket_id || '#GENERAL'}</span> <b class="text-blue-400">${b.feedback_type}</b>
+                        <p class="text-slate-200 mt-1">${b.message}</p><p class="text-[10px] text-slate-500">By: ${b.user_email}</p></div>
+                        <button onclick="markTicketCompleted('${b.id}')" class="bg-emerald-600 text-white font-bold px-3 py-2 rounded-lg shrink-0">✅ Mark Completed & Push Live</button>
+                    </div>
+                `).join('');
+        }
+
+        async function markTicketCompleted(id) {
+            await supabaseClient.from('bug_reports').update({ status: 'completed' }).eq('id', id);
+            alert('Ticket completed and live alert sent!'); loadBugReports();
+        }
+
+        async function updatePayment(id, status, email, type, credits) {
+            await supabaseClient.from('user_purchases').update({ status }).eq('id', id);
+            if (status === 'approved' && type === 'credits') {
+                const { data: ex } = await supabaseClient.from('user_credits').select('*').eq('user_email', email).single();
+                await supabaseClient.from('user_credits').upsert([{ user_email: email, credits: (ex?.credits || 0) + credits }]);
+            }
+            alert(`Payment ${status}!`); 
+            loadPendingApprovals();
+            loadFinancialAnalytics();
+        }
+
+        checkAdminSession();
+    </script>
+</body>
+</html>
