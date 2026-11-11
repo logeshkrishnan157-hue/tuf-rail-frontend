@@ -62,7 +62,8 @@
             <div class="bg-cardbg border border-blue-500/40 p-6 rounded-2xl space-y-2 shadow-lg relative bg-gradient-to-b from-blue-950/20 to-cardbg">
                 <p class="text-xs font-bold text-blue-400 uppercase tracking-wider">🔑 Desktop App License Key</p>
                 <div class="flex items-center space-x-2 pt-1">
-                    <input type="text" id="licenseKeyDisplay" readonly class="w-full bg-darkbg border border-slate-800 rounded-lg p-2 text-xs text-emerald-400 font-mono" value="Generating...">
+                    <input type="password" id="licenseKeyDisplay" readonly class="w-full bg-darkbg border border-slate-800 rounded-lg p-2 text-xs text-emerald-400 font-mono" value="Generating...">
+                    <button onclick="toggleKeyVisibility()" id="toggleKeyBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-3 py-2 rounded-lg transition shrink-0">👁️ Show</button>
                     <button onclick="copyLicenseKey()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-2 rounded-lg transition shrink-0">Copy</button>
                 </div>
                 <p class="text-[10px] text-slate-400">Paste this key in your desktop app.</p>
@@ -207,7 +208,21 @@
             alert('License Key copied to clipboard!');
         }
 
+    
+        function toggleKeyVisibility() {
+            const keyInput = document.getElementById('licenseKeyDisplay');
+            const btn = document.getElementById('toggleKeyBtn');
+            if (keyInput.type === 'password') {
+                keyInput.type = 'text';
+                btn.innerText = '🙈 Hide';
+            } else {
+                keyInput.type = 'password';
+                btn.innerText = '👁️ Show';
+            }
+        }
+
         async function loadDashboardData() {
+            // ... (baaki code apdiye irukkum)
             const ordersList = document.getElementById('userOrdersList');
             const ticketContainer = document.getElementById('userTicketsList');
 
