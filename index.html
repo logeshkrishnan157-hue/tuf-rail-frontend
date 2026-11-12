@@ -388,7 +388,7 @@
                 document.getElementById('dashboardBtn').classList.remove('hidden');
                 await loadUserPurchases();
                 
-                await supabaseClient.from('user_credits').upsert([{ user_email: currentUserEmail, updated_at: new Date() }], { onConflict: 'user_email' });
+                
             }
             await fetchActiveOffer();
             loadStore();
