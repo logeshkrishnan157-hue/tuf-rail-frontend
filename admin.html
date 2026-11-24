@@ -33,7 +33,7 @@
         <!-- AUTH GATE -->
         <div id="authGate" class="bg-cardbg border border-slate-800 p-8 rounded-2xl text-center space-y-4">
             <h2 class="text-xl font-bold text-red-400">🔒 Restricted Admin Access</h2>
-            <p class="text-xs text-slate-400">Sign in with authorized Admin Google account (`logeshkrishnan`).</p>
+            <p class="text-xs text-slate-400">Authorized administrator Google account required to continue.</p>
             <button onclick="loginAdmin()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition">🔐 Sign in as Admin</button>
         </div>
 
@@ -235,7 +235,7 @@
         const SUPABASE_URL = 'https://nqfrbqopnnymolnlqtni.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_H1UovZR34uvI9ZTsK0fNEg_76VBl1rR';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const ADMIN_EMAIL = 'logeshkrishnan';
+        const ADMIN_EMAIL = 'logeshkrishnan157@gmail.com';
 
         async function loginAdmin() {
             await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
@@ -243,7 +243,7 @@
 
         async function checkAdminSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session && session.user.email.includes(ADMIN_EMAIL)) {
+            if (session && session.user.email === ADMIN_EMAIL) {
                 document.getElementById('authGate').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('adminEmailDisplay').innerText = `Admin: ${session.user.email}`;
@@ -257,7 +257,7 @@
             } else if (session) {
                 alert('Access Denied');
                 await supabaseClient.auth.signOut();
-                location.reload();
+                window.location.replace('index.html');
             }
         }
 
@@ -495,7 +495,7 @@
             const { data } = await supabaseClient.from('user_purchases').select('*, scenarios(title, thumbnail_url)').eq('status', 'pending');
             document.getElementById('pendingList').innerHTML = (!data || data.length === 0) ? '<p class="text-xs text-slate-500">No pending payments.</p>' :
                 data.map(item => `
-                    <div class="flex items-center justify-between bg-darkbg border border-slate-800 p-4 rounded-xl text-xs">
+                    <div id="pending-row-${item.id}" class="flex items-center justify-between bg-darkbg border border-slate-800 p-4 rounded-xl text-xs">
                         <div><b>${item.item_type === 'app' ? 'App (₹500)' : item.item_type === 'credits' ? `${item.credits_amount} Credits` : item.scenarios?.title}</b> - User: ${item.user_email} | UTR: ${item.transaction_id}
                         <a href="${item.payment_screenshot_url}" target="_blank" class="text-blue-400 underline block">View Screenshot</a></div>
                         <div class="space-x-2">
@@ -524,6 +524,13 @@
         }
 
         async function updatePayment(id, status, email, type, credits) {
+            const row = document.getElementById(`pending-row-${id}`);
+            if (row) {
+                row.querySelectorAll('button').forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+            }
             await supabaseClient.from('user_purchases').update({ status }).eq('id', id);
             if (status === 'approved' && type === 'credits') {
                 const { data: ex } = await supabaseClient.from('user_credits').select('*').eq('user_email', email).single();
