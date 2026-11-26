@@ -89,9 +89,10 @@
                         <span>🛡️</span><span>Official Licensing & System Requirements Notice:</span>
                     </p>
                     <p class="text-[11px] text-slate-300 leading-relaxed space-y-1">
-                        • **Hardware Requirement:** Strictly built for <b>PC / Laptop (Train Simulator Classic)</b>. Mobile devices and tablets are not supported.<br>
-                        • **AI Voice Assistant Compatibility:** Buying the TufTactics App enables the software framework. The AI Voice Assistant radio immersion is strictly supported and operational <b>only on official TufTactics-created scenarios</b> explicitly marked with the "AI Voice Assistant" feature badge.<br>
-                        • **Strict No-Refund Policy:** All digital software, scenario package, and voice credit sales are <b>final and non-refundable</b> once digital assets or credits are provisioned.
+                        • <b>Mandatory Desktop App Requirement:</b> Purchasing and installing the official <b>TufTactics Desktop App</b> (sold separately in the Store below) is <b>strictly mandatory</b> to install, activate, and play any scenario purchased from this website. Manual standalone files (.rwp / .zip) are not provided.<br>
+                        • <b>Hardware Requirement:</b> Strictly built for <b>PC / Laptop (Train Simulator Classic)</b>. Mobile devices and tablets are not supported.<br>
+                        • <b>AI Voice Assistant Compatibility:</b> Buying the TufTactics App enables the software framework. The AI Voice Assistant radio immersion is strictly supported and operational <b>only on official TufTactics-created scenarios</b> explicitly marked with the "AI Voice Assistant" feature badge.<br>
+                        • <b>Strict No-Refund Policy:</b> All digital software, scenario package, and voice credit sales are <b>final and non-refundable</b> once digital assets or credits are provisioned.
                     </p>
                 </div>
 
@@ -172,7 +173,7 @@
             <div class="space-y-6">
                 <div class="text-center space-y-2">
                     <h3 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">🚀 Official Desktop Software</h3>
-                    <p class="text-slate-400 text-sm max-w-xl mx-auto">Unlock the core desktop client to enable real-time voice radio immersion with AI crew members.</p>
+                    <p class="text-slate-400 text-sm max-w-xl mx-auto">Unlock the core desktop client — required to install scenarios and enable real-time voice radio immersion.</p>
                 </div>
                 <div class="max-w-3xl mx-auto bg-cardbg border border-blue-500/40 p-8 rounded-2xl shadow-xl relative overflow-hidden bg-gradient-to-b from-blue-950/20 to-cardbg flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
@@ -180,7 +181,7 @@
                         <span class="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold uppercase tracking-wider">Core Desktop App (PC/Laptop Only)</span>
                         <h4 class="text-2xl font-black text-slate-100">TufTactics TSC AI Voice Assistant App</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Communicate in real-time with Guard, Station Master, TTR, and ALP via Push-to-Talk on certified TufTactics scenarios. Includes a <b>one-time 150 Free Voice Credits bonus</b> upon purchase approval!
+                            Mandatory client required to install & run all TufTactics scenarios and communicate in real-time with Guard, Station Master, TTR, and ALP via Push-to-Talk. Includes a <b>one-time 150 Free Voice Credits bonus</b> upon purchase approval!
                         </p>
                     </div>
                     <div class="shrink-0 text-center space-y-3 relative z-10 w-full md:w-auto" id="appPriceContainer"></div>
@@ -201,6 +202,11 @@
                 <div class="text-center space-y-3">
                     <h3 class="text-3xl font-extrabold tracking-tight">🚂 Train Simulator Scenarios</h3>
                     <p class="text-slate-400 text-sm max-w-xl mx-auto">Unlock custom hand-crafted scenarios with instant UPI checkout.</p>
+                    <div>
+                        <p class="text-xs text-amber-400 font-semibold bg-amber-500/10 border border-amber-500/25 inline-block px-4 py-1.5 rounded-xl">
+                            ⚠️ Mandatory Requirement: All scenarios require the <b>TufTactics Desktop App</b> (sold above) for installation & activation. No manual .rwp / .zip files are provided.
+                        </p>
+                    </div>
                     
                     <div id="routeFilters" class="flex justify-center gap-3 pt-4 flex-wrap">
                         <button onclick="filterScenarios('all')" class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl">All Routes</button>
@@ -293,15 +299,21 @@
         </div>
     </div>
 
-    <!-- ADDONS MODAL -->
+    <!-- ADDONS & MANDATORY APP CHECK MODAL -->
     <div id="addonsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4">
-            <h3 class="text-lg font-bold text-amber-400">⚠️ Required Assets Check</h3>
+            <h3 class="text-lg font-bold text-amber-400">⚠️ Required Assets & App Check</h3>
             <div id="modalRequiredAssets" class="bg-darkbg p-3 rounded-xl text-xs text-blue-300 font-mono border border-slate-800"></div>
-            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer pt-2">
-                <input type="checkbox" id="acknowledgeCheckbox" class="rounded bg-darkbg border-slate-800">
-                <span>I confirm I own these add-ons.</span>
-            </label>
+            <div class="space-y-3 pt-2">
+                <label class="flex items-start space-x-2.5 text-xs text-slate-300 cursor-pointer">
+                    <input type="checkbox" id="acknowledgeCheckbox" class="mt-0.5 rounded bg-darkbg border-slate-800">
+                    <span>I confirm I own the required Indian Railways add-ons listed above.</span>
+                </label>
+                <label class="flex items-start space-x-2.5 text-xs text-amber-300 cursor-pointer bg-amber-500/10 border border-amber-500/25 p-3 rounded-xl">
+                    <input type="checkbox" id="acknowledgeAppCheckbox" class="mt-0.5 rounded bg-darkbg border-slate-800">
+                    <span>I understand that the <b>TufTactics Desktop App</b> (purchased separately) is <b>strictly mandatory</b> to install and run this scenario, and no manual .rwp/.zip files are provided.</span>
+                </label>
+            </div>
             <div class="flex space-x-3 pt-2">
                 <button onclick="confirmAddToCart()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs">Add to Cart</button>
                 <button onclick="closeAddonsModal()" class="w-full bg-slate-800 text-slate-300 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
@@ -360,9 +372,10 @@
         <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl">
             <h3 class="text-lg font-bold text-amber-400">📜 Corporate Terms & Conditions</h3>
             <div class="text-xs text-slate-300 space-y-3 max-h-64 overflow-y-auto leading-relaxed pr-2">
-                <p><b>1. Payment & Verification Window:</b> All manual UPI transactions are verified against submitted UTR numbers and payment screenshots within a <b>4 to 6 Hours processing window</b>.</p>
-                <p><b>2. Strict No-Refund Policy:</b> Due to the immediate provisioning of digital software licenses, downloadable scenario GUID files, and consumable AI voice generation credits, all purchases are <b>final and strictly non-refundable</b>.</p>
-                <p><b>3. Software Usage Limitations:</b> TufTactics grants users a personal, non-transferable license to execute the desktop software and scenarios solely for personal simulation entertainment on supported PC hardware.</p>
+                <p><b>1. Mandatory Desktop App Requirement:</b> An active, separately purchased license of the <b>TufTactics Desktop App</b> is strictly mandatory to install, decrypt, and execute any scenario package sold on this platform. Standalone manual installer files (.rwp / .zip) are not distributed.</p>
+                <p><b>2. Payment & Verification Window:</b> All manual UPI transactions are verified against submitted UTR numbers and payment screenshots within a <b>4 to 6 Hours processing window</b>.</p>
+                <p><b>3. Strict No-Refund Policy:</b> Due to the immediate provisioning of digital software licenses, app-bound scenario entitlements, and consumable AI voice generation credits, all purchases are <b>final and strictly non-refundable</b> — including scenarios purchased without owning the mandatory TufTactics Desktop App.</p>
+                <p><b>4. Software Usage Limitations:</b> TufTactics grants users a personal, non-transferable license to execute the desktop software and scenarios solely for personal simulation entertainment on supported PC hardware.</p>
             </div>
             <button onclick="closeTermsModal()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs">Acknowledge & Close</button>
         </div>
@@ -389,8 +402,6 @@
                 document.getElementById('userDisplayName').innerText = `👤 ${currentUserEmail.split('@')[0]}`;
                 document.getElementById('dashboardBtn').classList.remove('hidden');
                 await loadUserPurchases();
-                
-                
             }
             await fetchActiveOffer();
             loadStore();
@@ -597,12 +608,20 @@
             window.pendingScenarioToAdd = { ...scen, price };
             document.getElementById('modalRequiredAssets').innerText = scen.required_assets || 'No special requirements.';
             document.getElementById('acknowledgeCheckbox').checked = false;
+            document.getElementById('acknowledgeAppCheckbox').checked = false;
             document.getElementById('addonsModal').classList.remove('hidden');
         }
 
         function closeAddonsModal() { document.getElementById('addonsModal').classList.add('hidden'); }
         function confirmAddToCart() {
-            if (!document.getElementById('acknowledgeCheckbox').checked) { alert('Please acknowledge required add-ons.'); return; }
+            if (!document.getElementById('acknowledgeCheckbox').checked) {
+                alert('Please confirm you own the required add-ons.');
+                return;
+            }
+            if (!document.getElementById('acknowledgeAppCheckbox').checked) {
+                alert('Please confirm you understand that the TufTactics Desktop App is mandatory to install and run this scenario.');
+                return;
+            }
             cart.push({ ...window.pendingScenarioToAdd, item_type: 'scenario' });
             updateCartUI();
             closeAddonsModal();
