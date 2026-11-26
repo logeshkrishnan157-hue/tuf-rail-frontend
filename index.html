@@ -91,7 +91,7 @@
                     <p class="text-[11px] text-slate-300 leading-relaxed space-y-1">
                         • <b>Mandatory Desktop App Requirement:</b> Purchasing and installing the official <b>TufTactics Desktop App</b> (sold separately in the Store below) is <b>strictly mandatory</b> to install, activate, and play any scenario purchased from this website. Manual standalone files (.rwp / .zip) are not provided.<br>
                         • <b>Hardware Requirement:</b> Strictly built for <b>PC / Laptop (Train Simulator Classic)</b>. Mobile devices and tablets are not supported.<br>
-                        • <b>AI Voice Assistant Compatibility:</b> Buying the TufTactics App enables the software framework. The AI Voice Assistant radio immersion is strictly supported and operational <b>only on official TufTactics-created scenarios</b> explicitly marked with the "AI Voice Assistant" feature badge.<br>
+                        • <b>AI Voice Assistant & Credits Compatibility:</b> Buying the TufTactics App enables the software framework. Both the AI Voice Assistant radio immersion and <b>Voice Credits</b> work <b>strictly and exclusively</b> inside the TufTactics Desktop App on official TufTactics-created scenarios marked with the "AI Voice Assistant" feature badge.<br>
                         • <b>Strict No-Refund Policy:</b> All digital software, scenario package, and voice credit sales are <b>final and non-refundable</b> once digital assets or credits are provisioned.
                     </p>
                 </div>
@@ -190,9 +190,14 @@
 
             <!-- Voice Credits Packages -->
             <div class="space-y-6 pt-6 border-t border-slate-800/60">
-                <div class="text-center space-y-2">
+                <div class="text-center space-y-3">
                     <h3 class="text-3xl font-extrabold tracking-tight text-blue-400">⚡ AI Voice Assistant Credits</h3>
                     <p class="text-slate-400 text-sm max-w-xl mx-auto">Top up your voice credit balance to power real-time radio conversations in-game.</p>
+                    <div>
+                        <p class="text-xs text-amber-400 font-semibold bg-amber-500/10 border border-amber-500/25 inline-block px-4 py-1.5 rounded-xl">
+                            ⚠️ Mandatory Requirement: Voice Credits work <b>only</b> if you own the <b>TufTactics Desktop App</b> AND an <b>"AI Voice Assistant"</b> supported scenario.
+                        </p>
+                    </div>
                 </div>
                 <div id="creditsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"></div>
             </div>
@@ -372,9 +377,9 @@
         <div class="bg-cardbg border border-slate-800 p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl">
             <h3 class="text-lg font-bold text-amber-400">📜 Corporate Terms & Conditions</h3>
             <div class="text-xs text-slate-300 space-y-3 max-h-64 overflow-y-auto leading-relaxed pr-2">
-                <p><b>1. Mandatory Desktop App Requirement:</b> An active, separately purchased license of the <b>TufTactics Desktop App</b> is strictly mandatory to install, decrypt, and execute any scenario package sold on this platform. Standalone manual installer files (.rwp / .zip) are not distributed.</p>
+                <p><b>1. Mandatory Desktop App & Compatibility Requirement:</b> An active, separately purchased license of the <b>TufTactics Desktop App</b> is strictly mandatory to install, decrypt, and execute any scenario package sold on this platform. Additionally, <b>AI Voice Credits</b> are usable exclusively inside the TufTactics Desktop App on official scenarios marked with the <b>"AI Voice Assistant"</b> badge. Standalone manual installer files (.rwp / .zip) are not distributed.</p>
                 <p><b>2. Payment & Verification Window:</b> All manual UPI transactions are verified against submitted UTR numbers and payment screenshots within a <b>4 to 6 Hours processing window</b>.</p>
-                <p><b>3. Strict No-Refund Policy:</b> Due to the immediate provisioning of digital software licenses, app-bound scenario entitlements, and consumable AI voice generation credits, all purchases are <b>final and strictly non-refundable</b> — including scenarios purchased without owning the mandatory TufTactics Desktop App.</p>
+                <p><b>3. Strict No-Refund Policy:</b> Due to the immediate provisioning of digital software licenses, app-bound scenario entitlements, and consumable AI voice generation credits, all purchases are <b>final and strictly non-refundable</b> — including scenarios or Voice Credits purchased without owning the mandatory TufTactics Desktop App or a compatible scenario.</p>
                 <p><b>4. Software Usage Limitations:</b> TufTactics grants users a personal, non-transferable license to execute the desktop software and scenarios solely for personal simulation entertainment on supported PC hardware.</p>
             </div>
             <button onclick="closeTermsModal()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs">Acknowledge & Close</button>
@@ -598,6 +603,10 @@
         }
 
         function addCreditsToCart(credits, price) {
+            const ok = confirm(
+                `⚠️ Important Check:\n\nVoice Credits require BOTH the TufTactics Desktop App and an "AI Voice Assistant" supported scenario to work.\n\nAll credit purchases are strictly non-refundable. Click OK to confirm and add ${credits} Voice Credits to cart.`
+            );
+            if (!ok) return;
             cart.push({ id: `credits_${credits}`, title: `${credits} Voice Credits Topup`, price: price, item_type: 'credits', credits_amount: credits });
             updateCartUI();
             alert(`${credits} Voice Credits added to cart!`);
