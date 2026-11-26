@@ -597,6 +597,10 @@
         }
 
         function addAppToCart(price) {
+            const ok = confirm(
+                `⚠️ System Check:\n\nThis app requires Train Simulator Classic (PC/Laptop) already installed on your system. Mobile devices are not supported and purchases are non-refundable.\n\nClick OK to add to cart.`
+            );
+            if (!ok) return;
             cart.push({ id: 'app_tuftactics_desktop', title: 'TufTactics TSC AI Voice Assistant App', price: price, item_type: 'app', credits_amount: 0 });
             updateCartUI();
             alert('TufTactics App added to cart!');
